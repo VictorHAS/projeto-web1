@@ -86,6 +86,8 @@ O sistema deve permitir alterar o gabarito após o cadastro, com opção de anul
 O sistema deve permitir o registro manual das respostas de cada aluno, apresentando interface em forma de grade com alternativas A–E.  
 **Critério de aceite:** o sistema deve validar automaticamente o preenchimento completo antes de salvar.
 
+![Visão geral do sistema de correção de provas](screenshot.png)
+
 ---
 
 ## Tecnologias Utilizadas no Sistema de Correção de Provas
