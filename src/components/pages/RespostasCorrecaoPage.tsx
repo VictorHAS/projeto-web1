@@ -1,20 +1,20 @@
 import { useState } from "react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { 
-  Upload, 
-  Edit3, 
-  RefreshCw, 
-  CheckCircle, 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Upload,
+  Edit3,
+  RefreshCw,
+  CheckCircle,
   XCircle,
   TrendingUp,
   FileSpreadsheet
 } from "lucide-react";
-import { Progress } from "../ui/progress";
-import { Badge } from "../ui/badge";
-import { ScrollArea } from "../ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Aluno {
   id: number;
@@ -82,10 +82,10 @@ export function RespostasCorrecaoPage() {
         resposta: resp,
         correta: resp !== "" && resp === gabarito[idx]
       }));
-      
+
       const acertos = respostasDetalhadas.filter(r => r.correta).length;
-      const percentualAcertos = respostasAluno.filter(r => r !== "").length > 0 
-        ? (acertos / gabarito.length) * 100 
+      const percentualAcertos = respostasAluno.filter(r => r !== "").length > 0
+        ? (acertos / gabarito.length) * 100
         : 0;
       const nota = (acertos / gabarito.length) * 10;
 
@@ -204,7 +204,7 @@ export function RespostasCorrecaoPage() {
                   <div className="space-y-2">
                     {alunosData.map((aluno) => {
                       const alunoRespostas = respostas[aluno.id] || new Array(gabarito.length).fill("");
-                      
+
                       return (
                         <div key={aluno.id} className="flex items-center py-2 border-b border-border">
                           <div className="w-48 pr-4">
@@ -235,7 +235,7 @@ export function RespostasCorrecaoPage() {
                                       {respostaAluno || "-"}
                                     </p>
                                   </div>
-                                  
+
                                   {/* Dropdown de alternativas */}
                                   <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg p-1 z-10">
                                     {alternativas.map((alt) => (
@@ -318,7 +318,7 @@ export function RespostasCorrecaoPage() {
                           <p className="text-muted-foreground">Nota</p>
                           <p className="text-2xl">{resultado.nota}</p>
                         </div>
-                        <Badge 
+                        <Badge
                           variant={resultado.nota >= 6 ? "default" : "destructive"}
                           className="text-lg px-3 py-1"
                         >

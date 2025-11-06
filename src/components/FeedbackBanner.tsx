@@ -25,12 +25,12 @@ export function FeedbackBanner({ type, message, onClose }: FeedbackBannerProps) 
 
   return (
     <div className={`flex items-center gap-3 p-4 rounded-md border ${styles[type]}`}>
-      <Icon className="w-5 h-5 flex-shrink-0" />
+      <Icon className="w-5 h-5 shrink-0" />
       <p className="flex-1">{message}</p>
       {onClose && (
         <button
           onClick={onClose}
-          className="flex-shrink-0 hover:opacity-70 transition-opacity"
+          className="shrink-0 hover:opacity-70 transition-opacity"
         >
           <XCircle className="w-4 h-4" />
         </button>

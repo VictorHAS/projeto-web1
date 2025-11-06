@@ -1,30 +1,24 @@
-# Node modules: não versionar dependências
-/node_modules/
-
-# Dependências de build output
-/dist/
-/build/
-/static-html/
-
-# Logs e arquivos de debug
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Cache de compilação
-*.tsbuildinfo
-/.cache/
-/.vscode/
+node_modules
+dist
+dist-ssr
+*.local
 
-# Arquivos de ambiente sensíveis
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Sistema / Editor
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-.idea/
-*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

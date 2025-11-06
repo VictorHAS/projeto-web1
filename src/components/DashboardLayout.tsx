@@ -1,49 +1,54 @@
-import { ReactNode, useState } from "react";
-import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { 
-  Users, 
-  UserCog, 
-  GraduationCap, 
-  FileText, 
-  BarChart3, 
-  Menu, 
+import type { ReactNode } from "react";
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Users,
+  UserCog,
+  GraduationCap,
+  FileText,
+  BarChart3,
+  Menu,
   LogOut,
   LayoutDashboard,
   FileCheck
 } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { Separator } from "@/components/ui/separator";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  currentPage?: string;
-  onNavigate?: (page: string) => void;
-  pageTitle?: string;
 }
 
 interface NavItem {
   label: string;
   icon: typeof Users;
-  page: string;
+  path: string;
 }
 
 const navigationItems: NavItem[] = [
-  { label: "Dashboard", icon: LayoutDashboard, page: "dashboard" },
-  { label: "Turmas", icon: Users, page: "turmas" },
-  { label: "Alunos", icon: GraduationCap, page: "alunos" },
-  { label: "Professores", icon: UserCog, page: "professores" },
-  { label: "Provas", icon: FileText, page: "provas" },
-  { label: "Correção", icon: FileCheck, page: "correcao" },
-  { label: "Relatórios", icon: BarChart3, page: "relatorios" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Turmas", icon: Users, path: "/turmas" },
+  { label: "Alunos", icon: GraduationCap, path: "/alunos" },
+  { label: "Professores", icon: UserCog, path: "/professores" },
+  { label: "Provas", icon: FileText, path: "/provas" },
+  { label: "Correção", icon: FileCheck, path: "/correcao" },
+  { label: "Relatórios", icon: BarChart3, path: "/relatorios" },
 ];
 
+const pageTitles: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/turmas": "Turmas",
+  "/alunos": "Alunos",
+  "/professores": "Professores",
+  "/provas": "Provas",
+  "/correcao": "Correção",
+  "/relatorios": "Relatórios",
+};
+
 function SidebarContent({
-  currentPage,
-  onNavigate,
   onMobileClose,
 }: {
-  currentPage?: string;
-  onNavigate?: (page: string) => void;
   onMobileClose?: () => void;
 }) {
   return (
@@ -66,23 +71,22 @@ function SidebarContent({
       <nav className="flex-1 p-4 space-y-1">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPage === item.page;
           return (
-            <button
+            <NavLink
               key={item.label}
-              onClick={() => {
-                onNavigate?.(item.page);
-                onMobileClose?.();
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-accent"
-              }`}
+              to={item.path}
+              onClick={onMobileClose}
+              className={({ isActive }) =>
+                `w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-accent"
+                }`
+              }
             >
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>
-            </button>
+            </NavLink>
           );
         })}
       </nav>
@@ -99,19 +103,18 @@ function SidebarContent({
   );
 }
 
-export function DashboardLayout({ 
-  children, 
-  currentPage = "dashboard",
-  onNavigate,
-  pageTitle = "Dashboard"
+export function DashboardLayout({
+  children,
 }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const pageTitle = pageTitles[location.pathname] || "Dashboard";
 
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar Desktop */}
       <aside className="hidden md:block fixed left-0 top-0 h-full w-64 bg-card border-r border-border">
-        <SidebarContent currentPage={currentPage} onNavigate={onNavigate} />
+        <SidebarContent />
       </aside>
 
       {/* Main Content Area */}
@@ -127,9 +130,7 @@ export function DashboardLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-64">
-                <SidebarContent 
-                  currentPage={currentPage} 
-                  onNavigate={onNavigate}
+                <SidebarContent
                   onMobileClose={() => setMobileMenuOpen(false)}
                 />
               </SheetContent>
