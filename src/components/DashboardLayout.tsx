@@ -15,6 +15,7 @@ import {
   FileCheck
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { ModeToggle } from "./mode-toggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -155,6 +156,7 @@ export function DashboardLayout({
                 <p>Prof. João Silva</p>
                 <p className="text-muted-foreground">Coordenador</p>
               </div>
+              <ModeToggle />
               <Button variant="outline" size="icon">
                 <LogOut className="w-4 h-4" />
               </Button>
