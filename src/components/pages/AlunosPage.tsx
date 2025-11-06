@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,50 +6,91 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Filter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-
-interface Aluno {
-  id: number;
-  nome: string;
-  matricula: string;
-  turma: string;
-  status: "ativo" | "inativo";
-}
-
-const alunosData: Aluno[] = [
-  { id: 1, nome: "João Silva", matricula: "202301", turma: "Turma A", status: "ativo" },
-  { id: 2, nome: "Maria Santos", matricula: "202302", turma: "Turma A", status: "ativo" },
-  { id: 3, nome: "Pedro Costa", matricula: "202303", turma: "Turma B", status: "ativo" },
-  { id: 4, nome: "Ana Paula", matricula: "202304", turma: "Turma B", status: "ativo" },
-  { id: 5, nome: "Carlos Eduardo", matricula: "202305", turma: "Turma C", status: "ativo" },
-  { id: 6, nome: "Juliana Oliveira", matricula: "202306", turma: "Turma C", status: "inativo" },
-  { id: 7, nome: "Roberto Alves", matricula: "202307", turma: "Turma A", status: "ativo" },
-  { id: 8, nome: "Fernanda Lima", matricula: "202308", turma: "Turma D", status: "ativo" },
-];
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Pencil, Trash2, Filter, AlertCircle } from "lucide-react";
+import { useSCP } from "@/hooks/useSCP";
+import type { Aluno } from "@/domain/models";
 
 export function AlunosPage() {
+  const { alunos, turmas, createAluno, updateAluno, deleteAluno, listAlunos } = useSCP();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAluno, setEditingAluno] = useState<Aluno | null>(null);
-  const [filterTurma, setFilterTurma] = useState<string>("todas");
+  const [filterTurmaId, setFilterTurmaId] = useState<string>("todas");
+  const [selectedTurmaId, setSelectedTurmaId] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const filteredAlunos = filterTurma === "todas"
-    ? alunosData
-    : alunosData.filter(aluno => aluno.turma === filterTurma);
+  const filteredAlunos = useMemo(() => {
+    if (filterTurmaId === "todas") {
+      return alunos;
+    }
+    return listAlunos(filterTurmaId);
+  }, [alunos, filterTurmaId, listAlunos]);
+
+  const getTurmaName = (turmaId: string) => {
+    return turmas.find(t => t.id === turmaId)?.nome || turmaId;
+  };
 
   const handleEdit = (aluno: Aluno) => {
     setEditingAluno(aluno);
+    setSelectedTurmaId(aluno.turmaId);
+    setError(null);
     setIsDialogOpen(true);
   };
 
   const handleAdd = () => {
     setEditingAluno(null);
+    setSelectedTurmaId(turmas.length > 0 ? turmas[0].id : "");
+    setError(null);
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingAluno(null);
+    setSelectedTurmaId("");
+    setError(null);
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const nome = formData.get("nome") as string;
+    const matricula = formData.get("matricula") as string;
+    const turmaId = selectedTurmaId;
+
+    if (!nome || !matricula || !turmaId) {
+      setError("Preencha todos os campos");
+      return;
+    }
+
+    try {
+      if (editingAluno) {
+        updateAluno(editingAluno.id, { nome, matricula, turmaId });
+      } else {
+        createAluno({ nome, matricula, turmaId });
+      }
+      handleCloseDialog();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar aluno");
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este aluno?")) {
+      return;
+    }
+
+    try {
+      deleteAluno(id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir aluno");
+    }
   };
 
   return (
@@ -80,47 +121,49 @@ export function AlunosPage() {
                   : "Preencha os dados para cadastrar um novo aluno"}
               </DialogDescription>
             </DialogHeader>
-            <form className="space-y-4 pt-4">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 pt-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome Completo</Label>
                 <Input
                   id="nome"
+                  name="nome"
                   placeholder="Digite o nome completo"
                   defaultValue={editingAluno?.nome}
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="matricula">Matrícula</Label>
                 <Input
                   id="matricula"
+                  name="matricula"
                   placeholder="000000"
                   defaultValue={editingAluno?.matricula}
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="turma">Turma</Label>
-                <Select defaultValue={editingAluno?.turma}>
+                <Select value={selectedTurmaId} onValueChange={setSelectedTurmaId} required>
                   <SelectTrigger id="turma">
                     <SelectValue placeholder="Selecione uma turma" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Turma A">Turma A</SelectItem>
-                    <SelectItem value="Turma B">Turma B</SelectItem>
-                    <SelectItem value="Turma C">Turma C</SelectItem>
-                    <SelectItem value="Turma D">Turma D</SelectItem>
-                    <SelectItem value="Turma E">Turma E</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={editingAluno?.status || "ativo"}>
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
+                    {turmas.length === 0 ? (
+                      <SelectItem value="" disabled>Nenhuma turma cadastrada</SelectItem>
+                    ) : (
+                      turmas.map((turma) => (
+                        <SelectItem key={turma.id} value={turma.id}>
+                          {turma.nome}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -132,7 +175,7 @@ export function AlunosPage() {
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" onClick={handleCloseDialog}>
+                <Button type="submit">
                   {editingAluno ? "Salvar Alterações" : "Cadastrar Aluno"}
                 </Button>
               </div>
@@ -148,17 +191,17 @@ export function AlunosPage() {
             <Filter className="w-5 h-5 text-muted-foreground" />
             <div className="flex-1">
               <Label htmlFor="filter-turma">Filtrar por Turma</Label>
-              <Select value={filterTurma} onValueChange={setFilterTurma}>
+              <Select value={filterTurmaId} onValueChange={setFilterTurmaId}>
                 <SelectTrigger id="filter-turma" className="mt-2">
                   <SelectValue placeholder="Selecione uma turma" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas as Turmas</SelectItem>
-                  <SelectItem value="Turma A">Turma A</SelectItem>
-                  <SelectItem value="Turma B">Turma B</SelectItem>
-                  <SelectItem value="Turma C">Turma C</SelectItem>
-                  <SelectItem value="Turma D">Turma D</SelectItem>
-                  <SelectItem value="Turma E">Turma E</SelectItem>
+                  {turmas.map((turma) => (
+                    <SelectItem key={turma.id} value={turma.id}>
+                      {turma.nome}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -172,7 +215,7 @@ export function AlunosPage() {
           <CardTitle>Lista de Alunos</CardTitle>
           <CardDescription>
             {filteredAlunos.length} aluno(s) encontrado(s)
-            {filterTurma !== "todas" && ` na ${filterTurma}`}
+            {filterTurmaId !== "todas" && ` na ${getTurmaName(filterTurmaId)}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -182,37 +225,43 @@ export function AlunosPage() {
                 <TableHead>Matrícula</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Turma</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAlunos.map((aluno) => (
-                <TableRow key={aluno.id}>
-                  <TableCell>{aluno.matricula}</TableCell>
-                  <TableCell>{aluno.nome}</TableCell>
-                  <TableCell>{aluno.turma}</TableCell>
-                  <TableCell>
-                    <Badge variant={aluno.status === "ativo" ? "default" : "secondary"}>
-                      {aluno.status === "ativo" ? "Ativo" : "Inativo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(aluno)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
+              {filteredAlunos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    Nenhum aluno encontrado
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredAlunos.map((aluno) => (
+                  <TableRow key={aluno.id}>
+                    <TableCell>{aluno.matricula}</TableCell>
+                    <TableCell>{aluno.nome}</TableCell>
+                    <TableCell>{getTurmaName(aluno.turmaId)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(aluno)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(aluno.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
