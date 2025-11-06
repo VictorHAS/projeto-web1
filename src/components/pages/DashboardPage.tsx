@@ -189,11 +189,13 @@ export function DashboardPage() {
               {upcomingProvas.map((prova) => {
                 const { day, month } = formatCalendarDate(prova.data);
                 return (
-                  <div key={prova.id} className="flex gap-4 p-4 rounded-lg border border-border">
-                    <div className="flex flex-col items-center justify-center w-16 h-16 bg-primary/10 rounded-lg">
-                      <Calendar className="w-5 h-5 text-primary mb-1" />
-                      <p className="text-primary">{day}</p>
-                      <p className="text-muted-foreground">{month}</p>
+                  <div key={prova.id} className="flex gap-4 p-4 rounded-lg border border-border items-center">
+                    <div className="flex items-center justify-center w-20 h-20 bg-primary/10 rounded-lg">
+                      <Calendar className="w-6 h-6 text-primary" />
+                      <div className="flex flex-col items-center justify-center ml-2">
+                        <p className="text-primary text-2xl">{day}</p>
+                        <p className="text-muted-foreground text-sm">{month}</p>
+                      </div>
                     </div>
                     <div className="flex-1">
                       <p>{prova.titulo}</p>
