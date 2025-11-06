@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,9 +37,9 @@ const chartConfig = {
 export function RelatoriosPage() {
   const { provas, turmas, alunos, totals, listRespostasByProva, getGabaritoByProva } = useSCP();
 
-  const getTurmaName = (turmaId: string) => {
+  const getTurmaName = useCallback((turmaId: string) => {
     return turmas.find(t => t.id === turmaId)?.nome || turmaId;
-  };
+  }, [turmas]);
 
   // Get all respostas with notas
   const allRespostasComNotas = useMemo(() => {

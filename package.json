@@ -47,7 +47,6 @@
     "vite": "npm:rolldown-vite@7.1.14"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@7.1.14",
     "react-is": "^19.1.1-rc-69d4b800-20241021"
   }
 }

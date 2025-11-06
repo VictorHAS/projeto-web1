@@ -52,7 +52,7 @@ export function useSCP() {
   const saveGabarito = useCallback((provaId: string, resp: AltGabarito[]) => { DB.createOrReplaceGabarito(provaId, resp); refresh(); }, [refresh]);
   const saveRespostas = useCallback((provaId: string, alunoId: string, resp: Alt[]) => { DB.createOrUpdateResposta({ provaId, alunoId, respostas: resp }); refresh(); }, [refresh]);
 
-  const totals = useMemo(() => DB.getTotals(), [turmas, alunos, provas]);
+  const totals = useMemo(() => DB.getTotals(), []);
 
   const listTurmas = useCallback(() => DB.listTurmas(), []);
   const listAlunos = useCallback((turmaId?: string) => DB.listAlunos(turmaId), []);

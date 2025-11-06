@@ -47,7 +47,7 @@ export function RespostasCorrecaoPage() {
   const alunos = useMemo(() => {
     if (!selectedProva) return [];
     return listAlunos(selectedProva.turmaId);
-  }, [selectedProva?.turmaId, listAlunos]);
+  }, [selectedProva, listAlunos]);
 
   const gabarito = useMemo(() => {
     if (!selectedProvaId) return null;
@@ -78,7 +78,7 @@ export function RespostasCorrecaoPage() {
     });
 
     setRespostas(respostasMap);
-  }, [selectedProvaId, selectedProva?.turmaId, selectedProva?.qtdQuestoes, listRespostasByProva, listAlunos]);
+  }, [selectedProvaId, selectedProva, listRespostasByProva, listAlunos]);
 
   const handleSelectResposta = async (alunoId: string, questaoIndex: number, alternativa: Alt) => {
     if (!selectedProvaId || !selectedProva) return;

@@ -4,7 +4,9 @@ export const KEY_DB = "scp_db";
 
 function nowISO() { return new Date().toISOString(); }
 function uid(prefix = "id"): ID {
-  const r = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? (crypto as any).randomUUID() : Math.random().toString(36).slice(2);
+  const r = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    ? (crypto as Crypto).randomUUID()
+    : Math.random().toString(36).slice(2);
   return `${prefix}_${r}`;
 }
 
@@ -12,7 +14,12 @@ function readDB(): SCPDB {
   const raw = localStorage.getItem(KEY_DB);
   if (!raw) {
     const empty: SCPDB = { turmas: [], alunos: [], provas: [], gabaritos: [], respostas: [], professores: [], _meta: { version: 1 } };
-    localStorage.setItem(KEY_DB, JSON.stringify(empty)); try { window.dispatchEvent(new Event('scp:changed')); } catch{}
+    localStorage.setItem(KEY_DB, JSON.stringify(empty));
+    try {
+      window.dispatchEvent(new Event('scp:changed'));
+    } catch {
+      // Ignore errors when dispatching event (e.g., in test environments)
+    }
     return empty;
   }
   const db = JSON.parse(raw) as SCPDB;
@@ -23,7 +30,14 @@ function readDB(): SCPDB {
   }
   return db;
 }
-function writeDB(db: any) { localStorage.setItem(KEY_DB, JSON.stringify(db)); try { window.dispatchEvent(new Event('scp:changed')); } catch{} }
+function writeDB(db: SCPDB) {
+  localStorage.setItem(KEY_DB, JSON.stringify(db));
+  try {
+    window.dispatchEvent(new Event('scp:changed'));
+  } catch {
+    // Ignore errors when dispatching event (e.g., in test environments)
+  }
+}
 
 export function calcNota(gabarito: AltGabarito[], respostas: Alt[]): number {
   let acertos = 0;
@@ -182,5 +196,9 @@ export const DB = {
 }
 // Expor o serviço no window para depurar pelo Console
 
-;(window as any).__scp = DB;
+interface WindowWithSCP extends Window {
+  __scp?: typeof DB;
+}
+
+;(window as WindowWithSCP).__scp = DB;
 console.log('[SCP] window.__scp disponível');
